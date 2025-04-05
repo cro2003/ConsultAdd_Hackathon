@@ -1,6 +1,10 @@
-// app/page.jsx
-import Home from "./home/page";
+import Image from "next/image";
+import App from "../app/home/page"
 
-export default function Page() {
-  return <Home />;
+export default function Home() {
+  return (
+    <div >
+      <App />
+    </div>
+  );
 }
