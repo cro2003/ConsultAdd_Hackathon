@@ -13,10 +13,7 @@ def hello_world():
         }
     )
 
-
-from werkzeug.utils import secure_filename
-
-@app.route('/upload', methods=['POST'])
+@app.route('/upload_rfp', methods=['POST'])
 def upload_rfp():
     if 'file' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
@@ -28,9 +25,8 @@ def upload_rfp():
 
     if file and RFPHelper().allowed_file(file.filename):
         upload_folder = Config().UPLOAD_FOLDER
-        os.makedirs(upload_folder, exist_ok=True)  # Ensure folder exists
+        os.makedirs(upload_folder, exist_ok=True)
 
-        # Use the original filename (as-is)
         filepath = os.path.join(upload_folder, file.filename)
         file.save(filepath)
 
