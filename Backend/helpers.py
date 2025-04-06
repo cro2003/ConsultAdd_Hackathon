@@ -237,7 +237,7 @@ def check_eligibility(company_data, eligibility_qa_chain):
     Please analyze the RFP document with extreme precision and extract:
 
     1. MANDATORY QUALIFICATION CRITERIA:
-       - Only extract explicit "must have" or "shall have" requirements
+       - Only extract explicit "must have" requirements
        - Focus on deal-breakers like:
          * Minimum years in business
          * Required certifications/licenses
@@ -250,7 +250,7 @@ def check_eligibility(company_data, eligibility_qa_chain):
        - For each mandatory criterion:
          * Does company data EXPLICITLY show the requirement is met? 
          * Cite the specific company data that proves compliance
-         * Note if data is missing or insufficient to determine
+         * Note if data is missing or insufficient to determine then mark as "Insufficient Data" and we can proceed to YES
 
     3. FINAL ASSESSMENT:
        - You MUST make a clear YES/NO determination
@@ -258,6 +258,7 @@ def check_eligibility(company_data, eligibility_qa_chain):
        - If even one mandatory criterion is definitely not met, the eligibility is NO
        - There can be some type of Invitation or Conference which has to be attended, so this need to be ignored.
        - There are Some Documents which are have to be submitted after the eligibility check when we do the proposal so dont consider them.
+       - Forms which are needed to be filled which are in document itself ignore them and proceed with YES
        - Consider "deal-breaker" aspects only - don't reject for minor issues
 
     4. CERTAINTY LEVEL:
