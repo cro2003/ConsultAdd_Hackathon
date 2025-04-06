@@ -10,7 +10,7 @@ import { FileText, X, CheckCircle, FileUp, FilePlus, Clock, AlertCircle } from "
 import { useToast } from "@/hooks/use-toast";
 
 // Standalone upload function using Axios
-async function uploadFile(file, url = 'http://192.168.1.39:5001/api/upload') {
+async function uploadFile(file, url = 'http://127.0.0.1:5000/api/upload') {
   // Create a new FormData instance
   const formData = new FormData();
   

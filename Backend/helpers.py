@@ -229,44 +229,16 @@ def check_eligibility(company_data, eligibility_qa_chain):
     prompt = f"""
     You are the PRIMARY ELIGIBILITY ASSESSMENT AGENT responsible for determining if a company meets the minimum qualifying criteria to bid on an RFP.
 
-    TASK: Perform a binary eligibility assessment based on mandatory requirements.
+    TASK: So we have this RFP first analyze it in brief 
+          Then we have to check whether are the Company is Eligible or not Check their Compliance, Legal, Certifications, Insurance, Experience & Other Requirements (all are strict). Company Data is given below
+          Check the Companies Core Business even it matches with the RFP or not. 
+          There can be some Form which are asked to fill, so they just needed to be filled so we can ignore them
+          Sometimes they do some kind of seminars/invitations/Pre-Proposal Conference, so we can ignore them
+          Mainly we are focusing on the requirements and legal issues regarding licenses, registration, Experience, etc.
+          Some Documents like reports, annual, Affidavit reports, financial etc. can be ignored as they can be provided in the future.
 
-    Company Profile:
+    Company Data:
     {json.dumps(company_data, indent=2)}
-
-    Please analyze the RFP document with extreme precision and extract:
-
-    1. MANDATORY QUALIFICATION CRITERIA:
-       - Only extract explicit "must have" requirements
-       - Focus on deal-breakers like:
-         * Minimum years in business
-         * Required certifications/licenses
-         * Minimum Experience in this industry
-         * Minimum financial requirements (revenue, bonding capacity)
-         * Geographical restrictions
-         * Experience requirements (project size, industry specialization)
-
-    2. COMPANY COMPLIANCE VERIFICATION:
-       - For each mandatory criterion:
-         * Does company data EXPLICITLY show the requirement is met? 
-         * Cite the specific company data that proves compliance
-         * Note if data is missing or insufficient to determine then mark as "Insufficient Data" and we can proceed to YES
-
-    3. FINAL ASSESSMENT:
-       - You MUST make a clear YES/NO determination
-       - The company is ONLY eligible if ALL mandatory criteria are met or if you lack evidence mark this is as YES But Show these Documents are not Present
-       - If even one mandatory criterion is definitely not met, the eligibility is NO
-       - There can be some type of Invitation or Conference which has to be attended, so this need to be ignored.
-       - There are Some Documents which are have to be submitted after the eligibility check when we do the proposal so dont consider them.
-       - Forms which are needed to be filled which are in document itself ignore them and proceed with YES
-       - Consider "deal-breaker" aspects only - don't reject for minor issues
-
-    4. CERTAINTY LEVEL:
-       - Indicate your confidence in this assessment (High/Medium/Low)
-       - If confidence is Low or Medium, explain what additional information would help
-
-    NOTE: If even one mandatory criterion is definitely not met, the eligibility is NO
-    Your output MUST include this exact structure:
 
     ```
     ## Eligibility Determination
@@ -284,6 +256,15 @@ def check_eligibility(company_data, eligibility_qa_chain):
     CONFIDENCE: [High/Medium/Low]
     RATIONALE: [Brief explanation of decision]
     ```
+    
+    ### Final Output Format
+    We will be strictly using json as this data has to be sent to frontend so do not add any formatting.
+    - proceed: yes/no
+    - confidence: high/medium/low
+    - eligibilities: 
+        - eligibility_name: name of eligibility like license, registration etc.
+        - eligibility_passed: true/false
+    - detailed_explanation: brief explanation of decision
 
     Remember: Be extremely thorough in identifying mandatory requirements, but ONLY assess eligibility on clearly stated requirements, not preferences or non-mandatory items.
     """
@@ -644,21 +625,19 @@ def eligibility_agent(state: MultiAgentState):
     print("Running eligibility agent...")
 
     result = check_eligibility(state.company_data, state.eligibility_qa_chain)
+    cleaned_data = result.strip("```").strip("json").strip()
+    result = json.loads(cleaned_data)
 
-    # Extract the eligibility decision (YES/NO) from the result
-    # This uses simple text matching but can be enhanced with regex or more robust parsing
-    if "PROCEED: YES" in result:
+    if result['proceed']:
         eligibility_decision = "YES"
-    elif "PROCEED: NO" in result:
-        eligibility_decision = "NO"
     else:
-        # Default to NO if we can't clearly determine
         eligibility_decision = "NO"
 
     print(f"Eligibility decision: {eligibility_decision}")
+    print(result)
 
     return {
-        "eligibility_result": result,
+        "eligibility_result": str(result),
         "eligibility_decision": eligibility_decision
     }
 
@@ -667,6 +646,7 @@ def checklist_agent(state: MultiAgentState):
     """Second agent: generates submission checklist if eligible"""
     print("Running checklist agent...")
     result = generate_checklist(state.company_data, state.checklist_qa_chain)
+    print(result)
     return {"checklist_result": result}
 
 
@@ -674,6 +654,7 @@ def risk_agent(state: MultiAgentState):
     """Third agent: analyzes contract risks if eligible"""
     print("Running risk agent...")
     result = analyze_risk(state.company_data, state.risk_qa_chain)
+    print(result)
     return {"risk_result": result}
 
 
@@ -681,6 +662,7 @@ def criteria_agent(state: MultiAgentState):
     """Fourth agent: analyzes competitive positioning if eligible"""
     print("Running criteria agent...")
     result = extract_criteria(state.company_data, state.criteria_qa_chain)
+    print(result)
     return {"criteria_result": result}
 
 
@@ -694,6 +676,7 @@ def summary_agent(state: MultiAgentState):
         state.criteria_result,
         state.summary_qa_chain
     )
+    print(result)
     return {"executive_summary": result}
 
 
