@@ -306,7 +306,7 @@ const UploadComponent = () => {
                         )}
                         
                         {uploadComplete && (
-                          <Link to="/dashboard">
+                          <Link to="/reports">
                             <Button>
                               Continue to Analysis
                             </Button>
